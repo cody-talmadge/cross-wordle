@@ -1,0 +1,23 @@
+{
+  "name": "cross-wordle",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cody-talmadge/cross_wordle.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cody-talmadge/cross_wordle/issues"
+  },
+  "homepage": "https://github.com/cody-talmadge/cross_wordle#readme",
+  "dependencies": {
+    "live-server": "^1.2.2"
+  }
+}
