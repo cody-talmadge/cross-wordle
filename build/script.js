@@ -1,12 +1,15 @@
 //Import the list of all words from the words.js file.  The first 2506 words are
 //the 'common' words that can be solutions.  The rest are valid for guesses, but
 //will not be the solution
-import { WORDS } from './words.js';
+import { WORDS } from "./words.js";
 
 //Set the list of 'common' words that can be solutions
 const GAME_WORDS = WORDS.slice(0,2506);
 //Set the list of all valid words that someone can use to guess
 const VALID_WORDS = WORDS;
+
+//Set the animation delay length (per letter in ms)
+const DELAY_LENGTH = 250;
 
 //Return a random word from the game words list
 let random_word = function() {
@@ -29,7 +32,7 @@ let verticalWord = undefined;
 let overlapCoordinates = [undefined,undefined];
 while (verticalWord === undefined) {
     let verticalWordAttempt = random_word();
-    horizontalWord.split('').forEach(letter => {
+    horizontalWord.split("").forEach(letter => {
         if (verticalWordAttempt.includes(letter)) {
             verticalWord = verticalWordAttempt;
             overlapCoordinates[0] = horizontalWord.indexOf(letter);
@@ -54,7 +57,7 @@ for (let i = 0; i < 5; i++) {
         let box = document.createElement("div");
         box.classList.add("letter-box");
         //If no letters appear, we want to create a (hidden) box for spacing
-        if (i != overlapCoordinates[1] && j != overlapCoordinates[0]) {
+        if (i !== overlapCoordinates[1] && j !== overlapCoordinates[0]) {
             box.classList.add("hidden-letter-box");
         } else {
             //If letters appear, we want the box to be visible
@@ -62,11 +65,11 @@ for (let i = 0; i < 5; i++) {
             //i (row number) = overlapCoordinates[1] (y component of cross spot)
             //means this is the row the horizontal word is on.  We'll use this 
             //to add green letters once the user guesses them correctly
-            if (i == overlapCoordinates[1]) box.classList.add("horizontal-cross-letter-box");
+            if (i === overlapCoordinates[1]) box.classList.add("horizontal-cross-letter-box");
             //j (column number) = overlapCoordinates[0] (x component of cross spot)
             //means this is the column the vertical word is on.  We'll use this 
             //to add green letters once the user guesses them correctly
-            if (j == overlapCoordinates[0]) box.classList.add("vertical-cross-letter-box");
+            if (j === overlapCoordinates[0]) box.classList.add("vertical-cross-letter-box");
         }
         row.appendChild(box);
     }
@@ -115,249 +118,242 @@ for (let i = 0; i < 5; i++) {
     rightBoard.appendChild(rightRow);
 }
 
+//Set up guessing infrastructure
 let guessesRemaining = NUMBER_OF_GUESSES;
-let nextLetter = 0;
 let currentGuess = [];
-
 let horizontalWin = false;
 let verticalWin = false;
 
+//Set up keyboard and letter infrastructure
 const LETTER_LIST = "abcdefghijklmnopqrstuvwxyz";
+//Colored keys will remember which keys have been colored (needed because keys
+//have a left and right coloring)
 let colored_keys = [];
-LETTER_LIST.split('').forEach((currLet) => {
-    colored_keys[currLet] = {left: 'lightgrey', right:'lightgrey'};
+LETTER_LIST.split("").forEach((currLet) => {
+    colored_keys[currLet] = {left: "lightgrey", right:"lightgrey"};
 });
 
-document.addEventListener("keyup", (e) => {
+//Handle any key presses
+document.addEventListener("keyup", (k) => {
+    let keyPress = String(k.key);
+    //If guessesRemaining = 0, the game is over
     if (guessesRemaining === 0) {
-        return;
-    }
-
-    let pressedKey = String(e.key);
-    if (pressedKey === "Backspace" && nextLetter !== 0) {
+    //If the key is a backspace (and there are letters remaining), delete the last letter
+    } else if (keyPress === "Backspace" && currentGuess.length !== 0) {
         deleteLetter();
-        return;
-    }
-
-    if (pressedKey === "Enter") {
+    //If the key is enter (and the user has completed the word), check the current guess
+    } else if (keyPress === "Enter" && currentGuess.length === 5) {
         checkGuess();
-        return;
-    }
-
-    let found = pressedKey.match(/[a-z]/gi);
-    if (!found || found.length > 1) {
-        return;
-    } else {
-        insertLetter(pressedKey);
+    //If the key is a valid letter (and the user hasn't completed the word), insert it
+    } else if (LETTER_LIST.includes(keyPress.toLowerCase()) && currentGuess.length !== 5) {
+        insertLetter(keyPress);
     }
 });
 
-function insertLetter (pressedKey) {
-    if (nextLetter === 5) {
-        return;
-    }
-    pressedKey = pressedKey.toLowerCase();
+//The user pressed a valid letter (and hasn't completed the word).  Insert the letter
+function insertLetter (keyPress) {
+    //Convert all letters and words to lower case for matching
+    keyPress = keyPress.toLowerCase();
 
+    //Ignore the left board if the user has already guessed the horizontal word correctly
     if (!horizontalWin) {
+        //Enter the letter in the correct space
         let leftRow = document.getElementsByClassName("left-letter-row")[NUMBER_OF_GUESSES - guessesRemaining];
-        let leftBox = leftRow.children[nextLetter];
-        // animateCSS(leftBox, "pulse")
-        leftBox.textContent = pressedKey;
-        leftBox.classList.add("filled-box");
-    }
-
-    if (!verticalWin) {
-        let rightRow = document.getElementsByClassName("right-letter-row")[nextLetter];
-        let rightBox = rightRow.children[NUMBER_OF_GUESSES - guessesRemaining];
-        // animateCSS(rightBox, "pulse")
-        rightBox.textContent = pressedKey;
-        rightBox.classList.add("filled-box");
-    }
-    currentGuess.push(pressedKey);
-    nextLetter += 1;
-}
-
-function deleteLetter () {
-    let leftRow = document.getElementsByClassName("left-letter-row")[NUMBER_OF_GUESSES - guessesRemaining];
-    let rightRow = document.getElementsByClassName("right-letter-row")[nextLetter - 1];
-    let leftBox = leftRow.children[nextLetter - 1];
-    let rightBox = rightRow.children[NUMBER_OF_GUESSES - guessesRemaining];
-    leftBox.textContent = "";
-    rightBox.textContent = "";
-    leftBox.classList.remove("filled-box");
-    rightBox.classList.remove("filled-box");
-    currentGuess.pop();
-    nextLetter -= 1;
-}
-
-function checkGuess () {
-    let leftRow = document.getElementsByClassName("left-letter-row")[NUMBER_OF_GUESSES - guessesRemaining];
-    let guessString = '';
-    let leftGuess = horizontalWord.split('');
-    let rightGuess = verticalWord.split('');
-
-    for (const val of currentGuess) {
-        guessString += val;
-    }
-
-    if (guessString.length != 5) {
-        alert("Not enough letters!");
-        return;
-    }
-
-    if (!WORDS.includes(guessString)) {
-        alert("Word not in list!");
-        return;
-    }
-
-    for (let i = 0; i < 5; i++) {
-        let leftLetterColor = '';
-        let rightLetterColor = '';
-        let leftBox = leftRow.children[i];
-        let rightRow = document.getElementsByClassName("right-letter-row")[i];
-        let rightBox = rightRow.children[NUMBER_OF_GUESSES - guessesRemaining];
-        let letter = currentGuess[i];
-        
-        let leftLetterPosition = leftGuess.indexOf(currentGuess[i]);
-        let rightLetterPosition = rightGuess.indexOf(currentGuess[i]);
-        // is letter in the correct guess
-        if (!horizontalWin) {
-            if (leftLetterPosition === -1) {
-                leftLetterColor = 'darkgrey'
-                colored_keys[currentGuess[i]].left = 'darkgrey';
-                let delay = 250 * i
-                setTimeout((i, thisLetter) => {
-                    let thisKey = document.getElementsByClassName('button-' + thisLetter)[0];
-                    thisKey.style.background = `linear-gradient(90deg, ${colored_keys[thisLetter].left} 50%, ${colored_keys[thisLetter].right} 50%)`;
-                }, delay, i, currentGuess[i])
-            } else {
-                // now, letter is definitely in word
-                // if letter index and right guess index are the same
-                // letter is in the right position
-                if (currentGuess[i] === leftGuess[i]) {
-                    // shade green 
-                    leftLetterColor = 'forestgreen';
-                    let delay = 250 * i
-                    let thisLetter = currentGuess[i]
-                    colored_keys[thisLetter].left = 'forestgreen';
-                    setTimeout((i, thisLetter) => {
-                        console.log(i)
-                        let crossSpot = document.getElementsByClassName('horizontal-cross-letter-box')[i];
-                        console.log(thisLetter);
-                        crossSpot.textContent = thisLetter;
-                        crossSpot.style.backgroundColor = 'forestgreen';
-                        // animateCSS(crossSpot, 'flipInX');
-                        let thisKey = document.getElementsByClassName('button-' + thisLetter)[0];
-                        thisKey.style.background = `linear-gradient(90deg, ${colored_keys[thisLetter].left} 50%, ${colored_keys[thisLetter].right} 50%)`;
-                    }, delay, i, thisLetter)
-
-                } else {
-                    // shade box yellow
-                    leftLetterColor = 'yellow';
-                    if (colored_keys[currentGuess[i]].left == 'lightgrey') colored_keys[currentGuess[i]].left = 'yellow';
-                    let delay = 250 * i
-                    setTimeout((i, thisLetter) => {
-                        let thisKey = document.getElementsByClassName('button-' + thisLetter)[0];
-                        thisKey.style.background = `linear-gradient(90deg, ${colored_keys[thisLetter].left} 50%, ${colored_keys[thisLetter].right} 50%)`;
-                    }, delay, i, currentGuess[i])
-                }
-    
-                leftGuess[leftLetterPosition] = "#";
-            }
-        }
-
-        if (!verticalWin) {
-            if (rightLetterPosition === -1) {
-                rightLetterColor = 'darkgrey';
-                colored_keys[currentGuess[i]].right = 'darkgrey';
-                let delay = 250 * i
-                setTimeout((i, thisLetter) => {
-                    let thisKey = document.getElementsByClassName('button-' + thisLetter)[0];
-                    thisKey.style.background = `linear-gradient(90deg, ${colored_keys[thisLetter].left} 50%, ${colored_keys[thisLetter].right} 50%)`;
-                }, delay, i, currentGuess[i])
-            } else {
-                // now, letter is definitely in word
-                // if letter index and right guess index are the same
-                // letter is in the right position 
-                if (currentGuess[i] === rightGuess[i]) {
-                    // shade green 
-                    rightLetterColor = 'forestgreen';
-                    let delay = 250 * i;
-                    let thisLetter = currentGuess[i];
-                    colored_keys[thisLetter].right = 'forestgreen';
-                    setTimeout((i, thisLetter) => {
-                        console.log(i)
-                        let crossSpot = document.getElementsByClassName('vertical-cross-letter-box')[i];
-                        console.log(thisLetter);
-                        crossSpot.textContent = thisLetter;
-                        crossSpot.style.backgroundColor = 'forestgreen';
-                        // animateCSS(crossSpot, 'flipInX');
-                        let thisKey = document.getElementsByClassName('button-' + thisLetter)[0];
-                        thisKey.style.background = `linear-gradient(90deg, ${colored_keys[thisLetter].left} 50%, ${colored_keys[thisLetter].right} 50%)`;
-                    }, delay, i, thisLetter)
-                } else {
-                    // shade box yellow
-                    rightLetterColor = 'yellow';
-                    if (colored_keys[currentGuess[i]].right == 'lightgrey') colored_keys[currentGuess[i]].right = 'yellow';
-                    let delay = 250 * i
-                    setTimeout((i, thisLetter) => {
-                        let thisKey = document.getElementsByClassName('button-' + thisLetter)[0];
-                        thisKey.style.background = `linear-gradient(90deg, ${colored_keys[thisLetter].left} 50%, ${colored_keys[thisLetter].right} 50%)`;
-                    }, delay, i, currentGuess[i])
-                }
-    
-                rightGuess[rightLetterPosition] = "#";
-            }
-        }
-        
-
-        let delay = 250 * i
-        setTimeout(()=> {
-            //shade box
-            // animateCSS(leftBox, 'flipInX')
-            // animateCSS(rightBox, 'flipInX')
-            leftBox.style.backgroundColor = leftLetterColor;
-            rightBox.style.backgroundColor = rightLetterColor;
-        }, delay)
-    }
-
-    
-
-    if (guessString === horizontalWord) {
-        horizontalWin = true;
-    }
-    if (guessString === verticalWord) {
-        verticalWin = true;
-    }
-    if (horizontalWin && verticalWin) {
-        setTimeout(()=> {
-            alert("You guessed right! Game over!")
-            guessesRemaining = 0
-        }, 1250)
-        return;
-    } else {
-        guessesRemaining -= 1;
-        currentGuess = [];
-        nextLetter = 0;
-
-        if (guessesRemaining === 0) {
-            alert("You've run out of guesses! Game over!")
-            alert(`The right words were: "${verticalWord}" and "${horizontalWord}"`)
-        }
-    }
-}
-
-document.getElementById("keyboard-cont").addEventListener("click", (e) => {
-    const target = e.target
-    
-    if (!target.classList.contains("keyboard-button")) {
-        return
-    }
-    let key = target.textContent
-
-    if (key === "Del") {
-        key = "Backspace"
+        let leftBox = leftRow.children[currentGuess.length];
+        leftBox.textContent = keyPress;
     } 
 
-    document.dispatchEvent(new KeyboardEvent("keyup", {'key': key}))
+    //Ignore the right board if the user has already guessed the vertical word correctly
+    if (!verticalWin) {
+        //Enter the letter in the correct space
+        let rightRow = document.getElementsByClassName("right-letter-row")[currentGuess.length];
+        let rightBox = rightRow.children[NUMBER_OF_GUESSES - guessesRemaining];
+        rightBox.textContent = keyPress;
+    }
+
+    //Add the letter to the currentGuess array
+    currentGuess.push(keyPress);
+}
+
+//The user pressed backspace (and this wasn't the last letter).  Delete the last letter
+function deleteLetter () {
+    //Remove letter from  the left guess board
+    let leftRow = document.getElementsByClassName("left-letter-row")[NUMBER_OF_GUESSES - guessesRemaining];
+    let leftBox = leftRow.children[currentGuess.length - 1];
+    leftBox.textContent = "";
+
+    //Remove letter from the right guess board
+    let rightRow = document.getElementsByClassName("right-letter-row")[currentGuess.length - 1];
+    let rightBox = rightRow.children[NUMBER_OF_GUESSES - guessesRemaining];
+    rightBox.textContent = "";
+
+    //Remove letter from the currentGuess array
+    currentGuess.pop();
+}
+
+//The user pressed the enter key (and has completed the word).  Check the current guess
+function checkGuess () {
+    //Set the current row representing the horizontal guess
+    let leftRow = document.getElementsByClassName("left-letter-row")[NUMBER_OF_GUESSES - guessesRemaining];
+
+    //Alert if the string version of the current guess is not in the valid words list
+    if (!VALID_WORDS.includes(currentGuess.join(""))) {
+        alert("Not a valid word");
+        return;
+    }
+
+    //Check the horizontal and vertical word letter-by-letter
+    for (let i = 0; i < 5; i++) {
+        //Set up the delay to be DELAY_LENGTH behind the last letter
+        let delay = DELAY_LENGTH * i;
+
+        let guessLetter = currentGuess[i];
+
+        //Set up the horizontal word checking
+        let leftBox = leftRow.children[i];
+        let leftLetterPosition = horizontalWord.indexOf(guessLetter);
+
+        //If the user has not guessed the horizontal word correctly yet
+        if (!horizontalWin) {
+            //If the letter is not in the word
+            if (leftLetterPosition === -1) {
+                colored_keys[guessLetter].left = 'darkgrey';
+
+                //After the animation delay, set the keyboard and guess board letter to dark grey
+                setTimeout((i, guessLetter) => {
+                    let thisKey = document.getElementsByClassName('button-' + guessLetter)[0];
+                    thisKey.style.background = `linear-gradient(90deg, ${colored_keys[guessLetter].left} 50%, ${colored_keys[guessLetter].right} 50%)`;
+                    
+                    leftBox.style.backgroundColor = 'darkgrey';
+                }, delay, i, guessLetter, leftBox)
+            } else {
+                //The letter is in the word
+
+                //The letter is in the right position
+                if (guessLetter === horizontalWord[i]) {
+                    colored_keys[guessLetter].left = 'forestgreen';
+
+                    //After the animation delay, set the keyboard, guess board, and cross-word board to forest green
+                    setTimeout((i, guessLetter) => {
+                        let crossWordBox = document.getElementsByClassName('horizontal-cross-letter-box')[i];
+                        crossWordBox.textContent = guessLetter;
+                        crossWordBox.style.backgroundColor = 'forestgreen';
+
+                        let thisKey = document.getElementsByClassName('button-' + guessLetter)[0];
+                        thisKey.style.background = `linear-gradient(90deg, ${colored_keys[guessLetter].left} 50%, ${colored_keys[guessLetter].right} 50%)`;
+                        
+                        leftBox.style.backgroundColor = 'forestgreen';
+                    }, delay, i, guessLetter, leftBox)
+
+                //The letter is in the wrong position
+                } else {
+                    //If we've already shaded it green, don't overwrite that
+                    if (colored_keys[guessLetter].left === 'lightgrey') colored_keys[guessLetter].left = 'yellow';
+
+                    //After the animation delay, set the keyboard and guess board to yellow
+                    setTimeout((i, guessLetter) => {
+                        let thisKey = document.getElementsByClassName('button-' + guessLetter)[0];
+                        thisKey.style.background = `linear-gradient(90deg, ${colored_keys[guessLetter].left} 50%, ${colored_keys[guessLetter].right} 50%)`;
+
+                        leftBox.style.backgroundColor = 'yellow';
+                    }, delay, i, guessLetter, leftBox)
+                }
+            }
+        }
+
+        //Set up the vertical word checking
+        let rightRow = document.getElementsByClassName("right-letter-row")[i];
+        let rightBox = rightRow.children[NUMBER_OF_GUESSES - guessesRemaining];
+        let rightLetterPosition = verticalWord.indexOf(guessLetter);
+
+        //If the user has not guessed the vertical word correctly yet
+        if (!verticalWin) {
+            //If the letter is not in the word
+            if (rightLetterPosition === -1) {
+                colored_keys[guessLetter].right = 'darkgrey';
+
+                //After the animation delay, set the keyboard and guess board letter to dark grey
+                setTimeout((i, guessLetter) => {
+                    let thisKey = document.getElementsByClassName('button-' + guessLetter)[0];
+                    thisKey.style.background = `linear-gradient(90deg, ${colored_keys[guessLetter].left} 50%, ${colored_keys[guessLetter].right} 50%)`;
+                    
+                    rightBox.style.backgroundColor = 'darkgrey';
+                }, delay, i, guessLetter, rightBox)
+            } else {
+                //The letter is in the word
+                
+                //The letter is in the right position
+                if (guessLetter === verticalWord[i]) {
+                    colored_keys[guessLetter].right = 'forestgreen';
+
+                    //After the animation delay, set the keyboard, guess board, and cross-word board to forest green
+                    setTimeout((i, guessLetter) => {
+                        let crossSpot = document.getElementsByClassName('vertical-cross-letter-box')[i];
+                        crossSpot.textContent = guessLetter;
+                        crossSpot.style.backgroundColor = 'forestgreen';
+                        
+                        let thisKey = document.getElementsByClassName('button-' + guessLetter)[0];
+                        thisKey.style.background = `linear-gradient(90deg, ${colored_keys[guessLetter].left} 50%, ${colored_keys[guessLetter].right} 50%)`;
+
+                        rightBox.style.backgroundColor = 'forestgreen';
+                    }, delay, i, guessLetter, rightBox)
+                
+                //The letter is in the wrong position
+                } else {
+                    //If we've already shaded it green, don't overwrite that
+                    if (colored_keys[guessLetter].right == 'lightgrey') colored_keys[guessLetter].right = 'yellow';
+                    
+                    //After the animation delay, set the keyboard and guess board to yellow
+                    setTimeout((i, guessLetter) => {
+                        let thisKey = document.getElementsByClassName('button-' + guessLetter)[0];
+                        thisKey.style.background = `linear-gradient(90deg, ${colored_keys[guessLetter].left} 50%, ${colored_keys[guessLetter].right} 50%)`;
+
+                        rightBox.style.backgroundColor = 'yellow';
+                    }, delay, i, guessLetter, rightBox)
+                }
+    
+            }
+        }
+    }
+
+    //Check for a horizontal word win
+    if (currentGuess.join("") === horizontalWord) {
+        horizontalWin = true;
+    }
+
+    //Check for a vertical word win
+    if (currentGuess.join("") === verticalWord) {
+        verticalWin = true;
+    }
+
+    //If the user has guessed both words correctly
+    if (horizontalWin && verticalWin) {
+        setTimeout(()=> {
+            alert("You guessed both words correctly!");
+            guessesRemaining = 0;
+        }, 1250)
+    //The user hasn't won yet
+    } else {
+        guessesRemaining--;
+        currentGuess = [];
+
+        //Game over
+        if (guessesRemaining === 0) {
+            alert(`You've run out of guesses, game over!  The words were: "${verticalWord}" and "${horizontalWord}"`);
+        }
+    }
+}
+
+//Send presses on the onscreen keyboard through as regular keyboard presses
+document.getElementById("keyboard").addEventListener("click", (key) => {
+    key = key.target;
+    //Only check for keyboard button elements    
+    if (!key.classList.contains("keyboard-button")) {
+        return;
+    }
+    key = key.textContent;
+    if (key === "Del") {
+        key = "Backspace";
+    }
+    document.dispatchEvent(new KeyboardEvent("keyup", {'key': key}));
 })
