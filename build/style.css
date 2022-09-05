@@ -4,15 +4,45 @@ h1 {
     margin: 5px;
 }
 
-#puzzle-boards {
+#cross-word {
     display: flex;
     align-items: center;
-    flex-direction: row;
+    flex-direction: column;
     text-align: center;
     justify-content: center;
 }
 
+.letter-row {
+    display: flex;
+}
 
+.letter-box {
+    margin: 2px;
+    font-size: 1rem;
+    font-weight: 700;
+    height: 1.5rem;
+    width: 1.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-transform: uppercase;
+}
+
+.visible-letter-box {
+    border: 2px solid #d3d6da;
+}
+
+/* Border matching the background makes these boxes hidden
+(but they still take up the space for alignment purposes) */
+.hidden-letter-box {
+    border: 2px solid white;
+}
+
+/* Gap size is the same as one crossword square */
+.row-break {
+    height: 1.5rem;
+    margin: 4px;
+}
 
 #game-boards {
     display: flex;
@@ -23,135 +53,30 @@ h1 {
 }
 
 .game-board {
-    display: flex;
-    align-items: center;
-    flex-direction: column;
-    padding-left: 1rem;
-    padding-right: 1rem;
+    margin-left: 0.75rem;
+    margin-right: 0.75rem;
 }
 
-.letter-box {
-    border: 2px solid black;
-    border-radius: 3px;
-    margin: 2px;
-    font-size: 1rem;
-    font-weight: 700;
-    height: 1.5rem;
-    width: 1.5rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-transform: uppercase;
-}
-
-.not-letter-box {
-    border: 2px solid white;
-    border-radius: 3px;
-    margin: 2px;
-    font-size: 1rem;
-    font-weight: 700;
-    height: 1.5rem;
-    width: 1.5rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-transform: uppercase;
-    /* background-color: dimgrey; */
-}
-
-.other-letter-box {
-    border: 2px solid black;
-    border-radius: 3px;
-    margin: 2px;
-    font-size: 1rem;
-    font-weight: 700;
-    height: 1.5rem;
-    width: 1.5rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-transform: uppercase;
-    background-color: lightgrey;
-}
-
-.horizontal-letter-box {
-    border: 2px solid black;
-    border-radius: 3px;
-    margin: 2px;
-    font-size: 1rem;
-    font-weight: 700;
-    height: 1.5rem;
-    width: 1.5rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-transform: uppercase;
-}
-
-.vertical-letter-box {
-    border: 2px solid black;
-    border-radius: 3px;
-    margin: 2px;
-    font-size: 1rem;
-    font-weight: 700;
-    height: 1.5rem;
-    width: 1.5rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-transform: uppercase;
-}
-
-.is-letter-box {
-    border: 2px solid black;
-    border-radius: 3px;
-    margin: 2px;
-    font-size: 1rem;
-    font-weight: 700;
-    height: 1.5rem;
-    width: 1.5rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-transform: uppercase;
-}
-
-.filled-box {
-    border: 2px solid black;
-}
-
-.cross-letter-row {
-    display: flex;
-}
-
-.left-letter-row {
-    display: flex;
-}
-
-.right-letter-row {
-    display: flex;
-}
-
-.row-break {
-    display: flex;
-}
+/* .filled-box {
+    border: 2px solid #d3d6da;
+} */
 
 #keyboard-cont {
     margin: 1rem 0;
     display: flex;
     flex-direction: column;
     align-items: center;
-  }
-  
-  #keyboard-cont div {
+}
+
+#keyboard-cont div {
     display: flex;
-  }
-  
-  .second-row {
+}
+
+.second-row {
     margin: 0.5rem 0;
-  }
-  
-  .keyboard-button {
+}
+
+.keyboard-button {
     font-size: 1rem;
     font-weight: 700;
     padding: 0.5rem;
@@ -159,4 +84,4 @@ h1 {
     cursor: pointer;
     text-transform: uppercase;
     background-color: lightgrey;
-  }
+}

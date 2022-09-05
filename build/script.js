@@ -1,11 +1,19 @@
+//Import the list of all words from the words.js file.  The first 2506 words are
+//the 'common' words that can be solutions.  The rest are valid for guesses, but
+//will not be the solution
 import { WORDS } from './words.js';
 
+//Set the list of 'common' words that can be solutions
+const GAME_WORDS = WORDS.slice(0,2506);
+//Set the list of all valid words that someone can use to guess
+const VALID_WORDS = WORDS;
+
+//Return a random word from the game words list
 let random_word = function() {
-    //Only the first 2305 words are valid solutions
-    //The rest of the words are valid guesses, but will never be the solution
-    return WORDS[Math.floor(Math.random() * 2305)];
+    return GAME_WORDS[Math.floor(Math.random() * GAME_WORDS.length)];
 }
 
+//Set up guess remaining counts for both words
 const NUMBER_OF_GUESSES = 7;
 let horizontalGuessesRemaining = NUMBER_OF_GUESSES;
 let verticalGuessesRemaining = NUMBER_OF_GUESSES;
@@ -13,74 +21,97 @@ let verticalGuessesRemaining = NUMBER_OF_GUESSES;
 //Set horizontal word
 let horizontalWord = random_word();
 
-//Set vertical word by trying words until they have an overlapping letter
+//Set the vertical word by trying random words until they have an overlapping letter
 //Store the coordinate of the overlapping letter so we can set up the board correctly
-let verticalWord = "";
-let overlapCoordinates = [0,0];
-while (verticalWord == "") {
-    let possibleWord = random_word();
+//overlapCoordinates[0] = x coordinate of overlapping letter
+//overlapCoordinates[1] = y coordnate of overlapping letter
+let verticalWord = undefined;
+let overlapCoordinates = [undefined,undefined];
+while (verticalWord === undefined) {
+    let verticalWordAttempt = random_word();
     horizontalWord.split('').forEach(letter => {
-        if (possibleWord.includes(letter)) {
+        if (verticalWordAttempt.includes(letter)) {
+            verticalWord = verticalWordAttempt;
             overlapCoordinates[0] = horizontalWord.indexOf(letter);
-            overlapCoordinates[1] = possibleWord.indexOf(letter);
-            verticalWord = possibleWord;
+            overlapCoordinates[1] = verticalWord.indexOf(letter);
         }
     });
 }
 
 //Log the words for debugging purposes
 console.log("First Word: ", horizontalWord);
-console.log("Second Word:", verticalWord);
-console.log("-----")
+console.log("Second Word: ", verticalWord);
+console.log("------------------");
 
-//Set up the game boards
-let puzzle = document.getElementById("puzzle");
-
+//Set up the crossword display
+let crossWord = document.getElementById("cross-word");
+//Create each row of the crossword
 for (let i = 0; i < 5; i++) {
     let row = document.createElement("div");
-    row.className = "cross-letter-row";
-
+    row.className = "letter-row";
+    //Create each column under that row
     for (let j = 0; j < 5; j++) {
         let box = document.createElement("div");
-        box.className =  "";
-        if (i == overlapCoordinates[1]) box.className = "horizontal-letter-box ";
-        if (j == overlapCoordinates[0]) box.className += "vertical-letter-box";
-        if (i != overlapCoordinates[1] && j != overlapCoordinates[0]) box.className = "not-letter-box"
+        box.classList.add("letter-box");
+        //If no letters appear, we want to create a (hidden) box for spacing
+        if (i != overlapCoordinates[1] && j != overlapCoordinates[0]) {
+            box.classList.add("hidden-letter-box");
+        } else {
+            //If letters appear, we want the box to be visible
+            box.classList.add("visible-letter-box");
+            //i (row number) = overlapCoordinates[1] (y component of cross spot)
+            //means this is the row the horizontal word is on.  We'll use this 
+            //to add green letters once the user guesses them correctly
+            if (i == overlapCoordinates[1]) box.classList.add("horizontal-cross-letter-box");
+            //j (column number) = overlapCoordinates[0] (x component of cross spot)
+            //means this is the column the vertical word is on.  We'll use this 
+            //to add green letters once the user guesses them correctly
+            if (j == overlapCoordinates[0]) box.classList.add("vertical-cross-letter-box");
+        }
         row.appendChild(box);
     }
-    puzzle.appendChild(row);
+    crossWord.appendChild(row);
 }
+//Add spacing between the crossword display and the guessing boards
+let rowBreak = document.createElement("div");
+rowBreak.classList.add("row-break");
+crossWord.appendChild(rowBreak);
 
-let rowBreak = document.createElement("br");
-rowBreak.className = "row-break";
-puzzle.appendChild(rowBreak);
+//Set up the guessing boards (where the player sees their letter guesses)
 
-//Set up the guessing boards
-
+//Left game board = board for the horizontal word
+//Guesses display horizontally
+//Height = number of guesses
+//Width = 5 (number of letters in words)
 let leftBoard = document.getElementById("left-game-board");
-
 for (let i = 0; i < NUMBER_OF_GUESSES; i++) {
     let leftRow = document.createElement("div");
-    leftRow.className = "left-letter-row";
+    leftRow.classList.add("letter-row", "left-letter-row");
 
     for (let j = 0; j < 5; j++) {
         let leftBox = document.createElement("div");
-        leftBox.className = "letter-box";
+        leftBox.classList.add("letter-box", "visible-letter-box");
         leftRow.appendChild(leftBox);
     }
+
     leftBoard.appendChild(leftRow);
 }
 
+//Right game board = board for the vertical word
+//Guesses display vertically
+//Height = number of guesses
+//Width = 5 (number of letters in words)
 let rightBoard = document.getElementById("right-game-board");
 for (let i = 0; i < 5; i++) {
     let rightRow = document.createElement("div");
-    rightRow.className = "right-letter-row";
+    rightRow.classList.add("letter-row", "right-letter-row");
 
     for (let j = 0; j < NUMBER_OF_GUESSES; j++) {
         let rightBox = document.createElement("div");
-        rightBox.className = "letter-box";
+        rightBox.classList.add("letter-box", "visible-letter-box");
         rightRow.appendChild(rightBox)
     }
+
     rightBoard.appendChild(rightRow);
 }
 
@@ -130,6 +161,7 @@ function insertLetter (pressedKey) {
     if (!horizontalWin) {
         let leftRow = document.getElementsByClassName("left-letter-row")[NUMBER_OF_GUESSES - guessesRemaining];
         let leftBox = leftRow.children[nextLetter];
+        // animateCSS(leftBox, "pulse")
         leftBox.textContent = pressedKey;
         leftBox.classList.add("filled-box");
     }
@@ -137,6 +169,7 @@ function insertLetter (pressedKey) {
     if (!verticalWin) {
         let rightRow = document.getElementsByClassName("right-letter-row")[nextLetter];
         let rightBox = rightRow.children[NUMBER_OF_GUESSES - guessesRemaining];
+        // animateCSS(rightBox, "pulse")
         rightBox.textContent = pressedKey;
         rightBox.classList.add("filled-box");
     }
@@ -190,7 +223,7 @@ function checkGuess () {
         // is letter in the correct guess
         if (!horizontalWin) {
             if (leftLetterPosition === -1) {
-                leftLetterColor = 'grey'
+                leftLetterColor = 'darkgrey'
                 colored_keys[currentGuess[i]].left = 'darkgrey';
                 let delay = 250 * i
                 setTimeout((i, thisLetter) => {
@@ -203,16 +236,17 @@ function checkGuess () {
                 // letter is in the right position
                 if (currentGuess[i] === leftGuess[i]) {
                     // shade green 
-                    leftLetterColor = 'green';
+                    leftLetterColor = 'forestgreen';
                     let delay = 250 * i
                     let thisLetter = currentGuess[i]
-                    colored_keys[thisLetter].left = 'limegreen';
+                    colored_keys[thisLetter].left = 'forestgreen';
                     setTimeout((i, thisLetter) => {
                         console.log(i)
-                        let crossSpot = document.getElementsByClassName('horizontal-letter-box')[i];
+                        let crossSpot = document.getElementsByClassName('horizontal-cross-letter-box')[i];
                         console.log(thisLetter);
                         crossSpot.textContent = thisLetter;
-                        crossSpot.style.backgroundColor = 'green';
+                        crossSpot.style.backgroundColor = 'forestgreen';
+                        // animateCSS(crossSpot, 'flipInX');
                         let thisKey = document.getElementsByClassName('button-' + thisLetter)[0];
                         thisKey.style.background = `linear-gradient(90deg, ${colored_keys[thisLetter].left} 50%, ${colored_keys[thisLetter].right} 50%)`;
                     }, delay, i, thisLetter)
@@ -234,7 +268,7 @@ function checkGuess () {
 
         if (!verticalWin) {
             if (rightLetterPosition === -1) {
-                rightLetterColor = 'grey';
+                rightLetterColor = 'darkgrey';
                 colored_keys[currentGuess[i]].right = 'darkgrey';
                 let delay = 250 * i
                 setTimeout((i, thisLetter) => {
@@ -247,16 +281,17 @@ function checkGuess () {
                 // letter is in the right position 
                 if (currentGuess[i] === rightGuess[i]) {
                     // shade green 
-                    rightLetterColor = 'green';
+                    rightLetterColor = 'forestgreen';
                     let delay = 250 * i;
                     let thisLetter = currentGuess[i];
-                    colored_keys[thisLetter].right = 'limegreen';
+                    colored_keys[thisLetter].right = 'forestgreen';
                     setTimeout((i, thisLetter) => {
                         console.log(i)
-                        let crossSpot = document.getElementsByClassName('vertical-letter-box')[i];
+                        let crossSpot = document.getElementsByClassName('vertical-cross-letter-box')[i];
                         console.log(thisLetter);
                         crossSpot.textContent = thisLetter;
-                        crossSpot.style.backgroundColor = 'green';
+                        crossSpot.style.backgroundColor = 'forestgreen';
+                        // animateCSS(crossSpot, 'flipInX');
                         let thisKey = document.getElementsByClassName('button-' + thisLetter)[0];
                         thisKey.style.background = `linear-gradient(90deg, ${colored_keys[thisLetter].left} 50%, ${colored_keys[thisLetter].right} 50%)`;
                     }, delay, i, thisLetter)
@@ -279,9 +314,10 @@ function checkGuess () {
         let delay = 250 * i
         setTimeout(()=> {
             //shade box
+            // animateCSS(leftBox, 'flipInX')
+            // animateCSS(rightBox, 'flipInX')
             leftBox.style.backgroundColor = leftLetterColor;
             rightBox.style.backgroundColor = rightLetterColor;
-            // shadeKeyBoard(letter, letterColor)
         }, delay)
     }
 
@@ -307,24 +343,6 @@ function checkGuess () {
         if (guessesRemaining === 0) {
             alert("You've run out of guesses! Game over!")
             alert(`The right words were: "${verticalWord}" and "${horizontalWord}"`)
-        }
-    }
-}
-
-function shadeKeyBoard(letter, color) {
-    for (const elem of document.getElementsByClassName("keyboard-button")) {
-        if (elem.textContent === letter) {
-            let oldColor = elem.style.backgroundColor
-            if (oldColor === 'green') {
-                return
-            } 
-
-            if (oldColor === 'yellow' && color !== 'green') {
-                return
-            }
-
-            elem.style.backgroundColor = color
-            break
         }
     }
 }
