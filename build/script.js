@@ -357,4 +357,4 @@ document.getElementById("keyboard").addEventListener("click", (key) => {
         key = "Backspace";
     }
     document.dispatchEvent(new KeyboardEvent("keyup", {'key': key}));
-})
+});
