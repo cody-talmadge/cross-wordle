@@ -3,11 +3,19 @@
 //will not be the solution
 import { WORDS } from "./words.js";
 
+//Set RANDOM to true for random words, false for daily words
+const RANDOM = true;
+
 //Set the list of 'common' words that can be solutions
 const GAME_WORDS = WORDS.slice(0,2306);
 
 //Set the list of all valid words that someone can use to guess
 const VALID_WORDS = WORDS;
+
+//Return a random word from the game words list
+let random_word = function() {
+    return GAME_WORDS[Math.floor(Math.random() * GAME_WORDS.length)];
+}
 
 //Set the animation delay length (per letter in ms)
 const DELAY_LENGTH = 250;
@@ -26,7 +34,12 @@ const START_DATE = START_DATE_MS / dayInMs;
 const CURR_DATE_MS = new Date().getTime();
 const CURR_DATE = CURR_DATE_MS / dayInMs;
 const HORIZONTAL_WORD_INDEX = Math.floor(CURR_DATE - START_DATE) * GAME_WORDS_DAILY_INCREMENT + START_GAME_WORDS_INDEX;
-let horizontalWord = GAME_WORDS[HORIZONTAL_WORD_INDEX % 2306];
+let horizontalWord;
+if (RANDOM) {
+    horizontalWord = random_word();
+} else {
+    horizontalWord = GAME_WORDS[HORIZONTAL_WORD_INDEX % 2306];
+}
 
 //Create the vertical word infrastructure
 let verticalWordIndex = 0;
@@ -48,7 +61,12 @@ let verticalGuessesRemaining = NUMBER_OF_GUESSES;
 let verticalWord = undefined;
 let overlapCoordinates = [undefined,undefined];
 while (verticalWord === undefined) {
-    let verticalWordAttempt = VERTICAL_WORD_GENERATOR();
+    let verticalWordAttempt;
+    if (RANDOM) {
+        verticalWordAttempt = random_word();
+    } else {
+        verticalWordAttempt = VERTICAL_WORD_GENERATOR();
+    }
     horizontalWord.split("").forEach(letter => {
         if (verticalWordAttempt.includes(letter)) {
             verticalWord = verticalWordAttempt;
