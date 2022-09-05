@@ -1,10 +1,11 @@
-//Import the list of all words from the words.js file.  The first 2506 words are
+//Import the list of all words from the words.js file.  The first 2305 words are
 //the 'common' words that can be solutions.  The rest are valid for guesses, but
 //will not be the solution
 import { WORDS } from "./words.js";
 
 //Set the list of 'common' words that can be solutions
-const GAME_WORDS = WORDS.slice(0,2506);
+const GAME_WORDS = WORDS.slice(0,2306);
+
 //Set the list of all valid words that someone can use to guess
 const VALID_WORDS = WORDS;
 
@@ -231,18 +232,18 @@ function checkGuess () {
 
                 //The letter is in the right position
                 if (guessLetter === horizontalWord[i]) {
-                    colored_keys[guessLetter].left = 'forestgreen';
+                    colored_keys[guessLetter].left = '#4CBB17';
 
                     //After the animation delay, set the keyboard, guess board, and cross-word board to forest green
                     setTimeout((i, guessLetter) => {
                         let crossWordBox = document.getElementsByClassName('horizontal-cross-letter-box')[i];
                         crossWordBox.textContent = guessLetter;
-                        crossWordBox.style.backgroundColor = 'forestgreen';
+                        crossWordBox.style.backgroundColor = '#4CBB17';
 
                         let thisKey = document.getElementsByClassName('button-' + guessLetter)[0];
                         thisKey.style.background = `linear-gradient(90deg, ${colored_keys[guessLetter].left} 50%, ${colored_keys[guessLetter].right} 50%)`;
                         
-                        leftBox.style.backgroundColor = 'forestgreen';
+                        leftBox.style.backgroundColor = '#4CBB17';
                     }, delay, i, guessLetter, leftBox)
 
                 //The letter is in the wrong position
@@ -284,18 +285,18 @@ function checkGuess () {
                 
                 //The letter is in the right position
                 if (guessLetter === verticalWord[i]) {
-                    colored_keys[guessLetter].right = 'forestgreen';
+                    colored_keys[guessLetter].right = '#4CBB17';
 
                     //After the animation delay, set the keyboard, guess board, and cross-word board to forest green
                     setTimeout((i, guessLetter) => {
                         let crossSpot = document.getElementsByClassName('vertical-cross-letter-box')[i];
                         crossSpot.textContent = guessLetter;
-                        crossSpot.style.backgroundColor = 'forestgreen';
+                        crossSpot.style.backgroundColor = '#4CBB17';
                         
                         let thisKey = document.getElementsByClassName('button-' + guessLetter)[0];
                         thisKey.style.background = `linear-gradient(90deg, ${colored_keys[guessLetter].left} 50%, ${colored_keys[guessLetter].right} 50%)`;
 
-                        rightBox.style.backgroundColor = 'forestgreen';
+                        rightBox.style.backgroundColor = '#4CBB17';
                     }, delay, i, guessLetter, rightBox)
                 
                 //The letter is in the wrong position
