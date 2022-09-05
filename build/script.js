@@ -12,9 +12,27 @@ const VALID_WORDS = WORDS;
 //Set the animation delay length (per letter in ms)
 const DELAY_LENGTH = 250;
 
-//Return a random word from the game words list
-let random_word = function() {
-    return GAME_WORDS[Math.floor(Math.random() * GAME_WORDS.length)];
+//Randomly chosen place in word list
+const START_GAME_WORDS_INDEX = 978;
+
+//Prime numbers to pseudo-randomize the selection
+const GAME_WORDS_DAILY_INCREMENT = 251;
+const SECOND_WORD_INCREMENT = 47;
+
+//Set the horizontal word
+const dayInMs = 1000 * 60 * 60 * 24;
+const START_DATE_MS = new Date('09/05/2022').getTime();
+const START_DATE = START_DATE_MS / dayInMs;
+const CURR_DATE_MS = new Date().getTime();
+const CURR_DATE = CURR_DATE_MS / dayInMs;
+const HORIZONTAL_WORD_INDEX = Math.floor(CURR_DATE - START_DATE) * GAME_WORDS_DAILY_INCREMENT + START_GAME_WORDS_INDEX;
+let horizontalWord = GAME_WORDS[HORIZONTAL_WORD_INDEX % 2306];
+
+//Create the vertical word infrastructure
+let verticalWordIndex = 0;
+const VERTICAL_WORD_GENERATOR = function() {
+    verticalWordIndex++;
+    return GAME_WORDS[(HORIZONTAL_WORD_INDEX + verticalWordIndex * SECOND_WORD_INCREMENT) % 2306];
 }
 
 //Set up guess remaining counts for both words
@@ -22,8 +40,6 @@ const NUMBER_OF_GUESSES = 7;
 let horizontalGuessesRemaining = NUMBER_OF_GUESSES;
 let verticalGuessesRemaining = NUMBER_OF_GUESSES;
 
-//Set horizontal word
-let horizontalWord = random_word();
 
 //Set the vertical word by trying random words until they have an overlapping letter
 //Store the coordinate of the overlapping letter so we can set up the board correctly
@@ -32,7 +48,7 @@ let horizontalWord = random_word();
 let verticalWord = undefined;
 let overlapCoordinates = [undefined,undefined];
 while (verticalWord === undefined) {
-    let verticalWordAttempt = random_word();
+    let verticalWordAttempt = VERTICAL_WORD_GENERATOR();
     horizontalWord.split("").forEach(letter => {
         if (verticalWordAttempt.includes(letter)) {
             verticalWord = verticalWordAttempt;
