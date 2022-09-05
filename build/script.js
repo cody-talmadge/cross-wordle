@@ -58,23 +58,29 @@ puzzle.appendChild(rowBreak);
 //Set up the guessing boards
 
 let leftBoard = document.getElementById("left-game-board");
-let rightBoard = document.getElementById("right-game-board");
 
 for (let i = 0; i < NUMBER_OF_GUESSES; i++) {
     let leftRow = document.createElement("div");
-    let rightRow = document.createElement("div");
     leftRow.className = "left-letter-row";
-    rightRow.className = "right-letter-row";
 
     for (let j = 0; j < 5; j++) {
         let leftBox = document.createElement("div");
-        let rightBox = document.createElement("div");
         leftBox.className = "letter-box";
-        rightBox.className = "letter-box";
         leftRow.appendChild(leftBox);
-        rightRow.appendChild(rightBox)
     }
     leftBoard.appendChild(leftRow);
+}
+
+let rightBoard = document.getElementById("right-game-board");
+for (let i = 0; i < 5; i++) {
+    let rightRow = document.createElement("div");
+    rightRow.className = "right-letter-row";
+
+    for (let j = 0; j < NUMBER_OF_GUESSES; j++) {
+        let rightBox = document.createElement("div");
+        rightBox.className = "letter-box";
+        rightRow.appendChild(rightBox)
+    }
     rightBoard.appendChild(rightRow);
 }
 
@@ -123,8 +129,8 @@ function insertLetter (pressedKey) {
     }
 
     if (!verticalWin) {
-        let rightRow = document.getElementsByClassName("right-letter-row")[NUMBER_OF_GUESSES - guessesRemaining];
-        let rightBox = rightRow.children[nextLetter];
+        let rightRow = document.getElementsByClassName("right-letter-row")[nextLetter];
+        let rightBox = rightRow.children[NUMBER_OF_GUESSES - guessesRemaining];
         rightBox.textContent = pressedKey;
         rightBox.classList.add("filled-box");
     }
@@ -134,9 +140,9 @@ function insertLetter (pressedKey) {
 
 function deleteLetter () {
     let leftRow = document.getElementsByClassName("left-letter-row")[NUMBER_OF_GUESSES - guessesRemaining];
-    let rightRow = document.getElementsByClassName("right-letter-row")[NUMBER_OF_GUESSES - guessesRemaining];
+    let rightRow = document.getElementsByClassName("right-letter-row")[nextLetter - 1];
     let leftBox = leftRow.children[nextLetter - 1];
-    let rightBox = rightRow.children[nextLetter - 1];
+    let rightBox = rightRow.children[NUMBER_OF_GUESSES - guessesRemaining];
     leftBox.textContent = "";
     rightBox.textContent = "";
     leftBox.classList.remove("filled-box");
@@ -147,7 +153,6 @@ function deleteLetter () {
 
 function checkGuess () {
     let leftRow = document.getElementsByClassName("left-letter-row")[NUMBER_OF_GUESSES - guessesRemaining];
-    let rightRow = document.getElementsByClassName("right-letter-row")[NUMBER_OF_GUESSES - guessesRemaining];
     let guessString = '';
     let leftGuess = horizontalWord.split('');
     let rightGuess = verticalWord.split('');
@@ -170,7 +175,8 @@ function checkGuess () {
         let leftLetterColor = '';
         let rightLetterColor = '';
         let leftBox = leftRow.children[i];
-        let rightBox = rightRow.children[i];
+        let rightRow = document.getElementsByClassName("right-letter-row")[i];
+        let rightBox = rightRow.children[NUMBER_OF_GUESSES - guessesRemaining];
         let letter = currentGuess[i];
         
         let leftLetterPosition = leftGuess.indexOf(currentGuess[i]);
