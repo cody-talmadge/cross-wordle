@@ -34,43 +34,31 @@ console.log("Second Word:", verticalWord);
 console.log("-----")
 
 //Set up the game boards
-let leftBoard = document.getElementById("left-game-board");
-let rightBoard = document.getElementById("right-game-board");
+let puzzle = document.getElementById("puzzle");
 
 for (let i = 0; i < 5; i++) {
-    let leftRow = document.createElement("div");
-    let rightRow = document.createElement("div");
-    leftRow.className = "cross-letter-row";
-    rightRow.className = "cross-letter-row";
+    let row = document.createElement("div");
+    row.className = "cross-letter-row";
 
     for (let j = 0; j < 5; j++) {
-        let leftBox = document.createElement("div");
-        let rightBox = document.createElement("div");
-        leftBox.className = "is-letter-box";
-        rightBox.className = "is-letter-box";
-        if (i == overlapCoordinates[1]) {
-            if (j != overlapCoordinates[0]) rightBox.className = "other-letter-box";
-        } else if (j == overlapCoordinates[0]) {
-            leftBox.className = "other-letter-box";
-        } else {
-            leftBox.className = "not-letter-box";
-            rightBox.className = "not-letter-box";
-        }
-        leftRow.appendChild(leftBox);
-        rightRow.appendChild(rightBox)
+        let box = document.createElement("div");
+        box.className =  "";
+        if (i == overlapCoordinates[1]) box.className = "horizontal-letter-box ";
+        if (j == overlapCoordinates[0]) box.className += "vertical-letter-box";
+        if (i != overlapCoordinates[1] && j != overlapCoordinates[0]) box.className = "not-letter-box"
+        row.appendChild(box);
     }
-    leftBoard.appendChild(leftRow);
-    rightBoard.appendChild(rightRow);
+    puzzle.appendChild(row);
 }
 
-let leftRowBreak = document.createElement("br");
-let rightRowBreak = document.createElement("br");
-leftRowBreak.className = "row-break";
-rightRowBreak.className = "row-break";
-leftBoard.appendChild(leftRowBreak);
-rightBoard.appendChild(rightRowBreak);
+let rowBreak = document.createElement("br");
+rowBreak.className = "row-break";
+puzzle.appendChild(rowBreak);
 
 //Set up the guessing boards
+
+let leftBoard = document.getElementById("left-game-board");
+let rightBoard = document.getElementById("right-game-board");
 
 for (let i = 0; i < NUMBER_OF_GUESSES; i++) {
     let leftRow = document.createElement("div");
@@ -202,7 +190,7 @@ function checkGuess () {
                     let thisLetter = currentGuess[i]
                     setTimeout((i, thisLetter) => {
                         console.log(i)
-                        let crossSpot = document.getElementsByClassName('is-letter-box')[i];
+                        let crossSpot = document.getElementsByClassName('horizontal-letter-box')[i];
                         console.log(thisLetter);
                         crossSpot.textContent = thisLetter;
                         crossSpot.style.backgroundColor = 'green';
@@ -231,11 +219,11 @@ function checkGuess () {
                     let thisLetter = currentGuess[i]
                     setTimeout((i, thisLetter) => {
                         console.log(i)
-                        let crossSpot = document.getElementsByClassName('is-letter-box')[i];
+                        let crossSpot = document.getElementsByClassName('vertical-letter-box')[i];
                         console.log(thisLetter);
                         crossSpot.textContent = thisLetter;
                         crossSpot.style.backgroundColor = 'green';
-                    }, delay, i + 5, thisLetter)
+                    }, delay, i, thisLetter)
                 } else {
                     // shade box yellow
                     rightLetterColor = 'yellow';
