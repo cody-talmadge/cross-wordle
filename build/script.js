@@ -91,6 +91,12 @@ let currentGuess = [];
 let horizontalWin = false;
 let verticalWin = false;
 
+const LETTER_LIST = "abcdefghijklmnopqrstuvwxyz";
+let colored_keys = [];
+LETTER_LIST.split('').forEach((currLet) => {
+    colored_keys[currLet] = {left: 'lightgrey', right:'lightgrey'};
+});
+
 document.addEventListener("keyup", (e) => {
     if (guessesRemaining === 0) {
         return;
@@ -185,26 +191,41 @@ function checkGuess () {
         if (!horizontalWin) {
             if (leftLetterPosition === -1) {
                 leftLetterColor = 'grey'
+                colored_keys[currentGuess[i]].left = 'darkgrey';
+                let delay = 250 * i
+                setTimeout((i, thisLetter) => {
+                    let thisKey = document.getElementsByClassName('button-' + thisLetter)[0];
+                    thisKey.style.background = `linear-gradient(90deg, ${colored_keys[thisLetter].left} 50%, ${colored_keys[thisLetter].right} 50%)`;
+                }, delay, i, currentGuess[i])
             } else {
                 // now, letter is definitely in word
                 // if letter index and right guess index are the same
-                // letter is in the right position 
+                // letter is in the right position
                 if (currentGuess[i] === leftGuess[i]) {
                     // shade green 
                     leftLetterColor = 'green';
                     let delay = 250 * i
                     let thisLetter = currentGuess[i]
+                    colored_keys[thisLetter].left = 'limegreen';
                     setTimeout((i, thisLetter) => {
                         console.log(i)
                         let crossSpot = document.getElementsByClassName('horizontal-letter-box')[i];
                         console.log(thisLetter);
                         crossSpot.textContent = thisLetter;
                         crossSpot.style.backgroundColor = 'green';
+                        let thisKey = document.getElementsByClassName('button-' + thisLetter)[0];
+                        thisKey.style.background = `linear-gradient(90deg, ${colored_keys[thisLetter].left} 50%, ${colored_keys[thisLetter].right} 50%)`;
                     }, delay, i, thisLetter)
 
                 } else {
                     // shade box yellow
                     leftLetterColor = 'yellow';
+                    if (colored_keys[currentGuess[i]].left == 'lightgrey') colored_keys[currentGuess[i]].left = 'yellow';
+                    let delay = 250 * i
+                    setTimeout((i, thisLetter) => {
+                        let thisKey = document.getElementsByClassName('button-' + thisLetter)[0];
+                        thisKey.style.background = `linear-gradient(90deg, ${colored_keys[thisLetter].left} 50%, ${colored_keys[thisLetter].right} 50%)`;
+                    }, delay, i, currentGuess[i])
                 }
     
                 leftGuess[leftLetterPosition] = "#";
@@ -214,6 +235,12 @@ function checkGuess () {
         if (!verticalWin) {
             if (rightLetterPosition === -1) {
                 rightLetterColor = 'grey';
+                colored_keys[currentGuess[i]].right = 'darkgrey';
+                let delay = 250 * i
+                setTimeout((i, thisLetter) => {
+                    let thisKey = document.getElementsByClassName('button-' + thisLetter)[0];
+                    thisKey.style.background = `linear-gradient(90deg, ${colored_keys[thisLetter].left} 50%, ${colored_keys[thisLetter].right} 50%)`;
+                }, delay, i, currentGuess[i])
             } else {
                 // now, letter is definitely in word
                 // if letter index and right guess index are the same
@@ -221,18 +248,27 @@ function checkGuess () {
                 if (currentGuess[i] === rightGuess[i]) {
                     // shade green 
                     rightLetterColor = 'green';
-                    let delay = 250 * i
-                    let thisLetter = currentGuess[i]
+                    let delay = 250 * i;
+                    let thisLetter = currentGuess[i];
+                    colored_keys[thisLetter].right = 'limegreen';
                     setTimeout((i, thisLetter) => {
                         console.log(i)
                         let crossSpot = document.getElementsByClassName('vertical-letter-box')[i];
                         console.log(thisLetter);
                         crossSpot.textContent = thisLetter;
                         crossSpot.style.backgroundColor = 'green';
+                        let thisKey = document.getElementsByClassName('button-' + thisLetter)[0];
+                        thisKey.style.background = `linear-gradient(90deg, ${colored_keys[thisLetter].left} 50%, ${colored_keys[thisLetter].right} 50%)`;
                     }, delay, i, thisLetter)
                 } else {
                     // shade box yellow
                     rightLetterColor = 'yellow';
+                    if (colored_keys[currentGuess[i]].right == 'lightgrey') colored_keys[currentGuess[i]].right = 'yellow';
+                    let delay = 250 * i
+                    setTimeout((i, thisLetter) => {
+                        let thisKey = document.getElementsByClassName('button-' + thisLetter)[0];
+                        thisKey.style.background = `linear-gradient(90deg, ${colored_keys[thisLetter].left} 50%, ${colored_keys[thisLetter].right} 50%)`;
+                    }, delay, i, currentGuess[i])
                 }
     
                 rightGuess[rightLetterPosition] = "#";
