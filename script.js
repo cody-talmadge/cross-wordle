@@ -366,7 +366,7 @@ function checkGuess () {
         setTimeout(()=> {
             alert("You guessed both words correctly!");
             guessesRemaining = 0;
-        }, 1250)
+        }, DELAY_LENGTH * 5)
     //The user hasn't won yet
     } else {
         guessesRemaining--;
@@ -374,7 +374,9 @@ function checkGuess () {
 
         //Game over
         if (guessesRemaining === 0) {
-            alert(`You've run out of guesses, game over!  The words were: "${verticalWord}" and "${horizontalWord}"`);
+            setTimeout(() => {
+                alert(`You've run out of guesses, game over!  The words were: "${horizontalWord}" and "${verticalWord}"`);
+            }, DELAY_LENGTH * 5);
         }
     }
 }
