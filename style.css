@@ -140,14 +140,20 @@ h1 {
 }
 
 .results-bar {
-    text-align: center;
+    text-align: left;
     margin: 5px;
     padding: 5px;
+    padding-left: 10px;
     background-color: darkgrey;
     color: white;
     width: 5%;
 }
 
-.results-bar-50 {
-    width: 50% !important;
+.results-bar-selected {
+    background-color: #4CBB17;
+}
+
+#close-results {
+    padding: 5px 10px;
+    margin: 10px 5px;
 }

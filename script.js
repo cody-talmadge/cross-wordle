@@ -407,6 +407,9 @@ function checkGuess (DELAY_LENGTH) {
                 localStorage.setItem("currentGameResult", JSON.stringify(currentGameResult));
                 updateGameResults();
                 alert("You guessed both words correctly!");
+                displayGameResults();
+            } else {
+                displayGameResults();
             }
             guessesRemaining = 0;
         }, DELAY_LENGTH * 5)
@@ -423,7 +426,10 @@ function checkGuess (DELAY_LENGTH) {
                     localStorage.setItem("currentGameResult", JSON.stringify(currentGameResult));
                     updateGameResults();
                     alert(`You've run out of guesses, game over!  The words were: "${horizontalWord}" and "${verticalWord}"`);
+                    displayGameResults();
                 }, DELAY_LENGTH * 5);
+            } else {
+                displayGameResults();
             }
         }
     }
@@ -432,6 +438,34 @@ function checkGuess (DELAY_LENGTH) {
 function updateGameResults() {
     gameResults[currentGameResult]++;
     localStorage.setItem("gameResults", JSON.stringify(gameResults));
+}
+
+function displayGameResults() {
+    let maxGameWins = 0;
+    let totalGameWins = 0;
+    for (let i = 2; i <= 7; i++) {
+        if (Number(gameResults[i]) > maxGameWins) {
+            maxGameWins = Number(gameResults[i]);
+        }
+        totalGameWins += Number(gameResults[i]);
+    }
+    let totalGamePlays = totalGameWins + Number(gameResults[-1]);
+    let winPercent = Math.floor((100 * totalGameWins) / totalGamePlays);
+    let winInfo = document.getElementById("win-info");
+    winInfo.innerText = `${totalGamePlays} Played - ${winPercent}% Won`;
+    let resultBars = document.getElementsByClassName("results-bar");
+    for (let i = 2; i <= 7; i++) {
+        if (i == currentGameResult) {
+            resultBars[i - 2].classList.add("results-bar-selected");
+        }
+        if (maxGameWins > 0) {
+            let resultsBarWidth = (gameResults[i] / maxGameWins) * 85 + 5;
+            resultBars[i - 2].style.width = `${resultsBarWidth}%`;
+        }
+        resultBars[i - 2].innerText = gameResults[i];
+    }
+    let resultsElement = document.getElementById("results");
+    resultsElement.style.display = "block";
 }
 
 //Send presses on the onscreen keyboard through as regular keyboard presses
@@ -446,4 +480,10 @@ document.getElementById("keyboard").addEventListener("click", (key) => {
         key = "Backspace";
     }
     document.dispatchEvent(new KeyboardEvent("keyup", {'key': key}));
+});
+
+//Allow the user to close the results box
+document.getElementById("close-results").addEventListener("click", (event) => {
+    let resultsElement = document.getElementById("results");
+    resultsElement.style.display = "none";
 });
