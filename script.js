@@ -1,13 +1,16 @@
-//Import the list of all words from the words.js file.  The first 2305 words are
-//the 'common' words that can be solutions.  The rest are valid for guesses, but
-//will not be the solution
+//Import the list of all words from the words.js file.  The first 500 words are
+//the curaetd 'common' words that can be solutions.  The rest are valid for guesses,
+//but will not be the solution
 import { WORDS } from "./words.js";
 
+//Set the number of guesses
+const NUMBER_OF_GUESSES = 7;
+
 //Set RANDOM to true for random words, false for daily words
-const RANDOM = true;
+const RANDOM = false;
 
 //Set the list of 'common' words that can be solutions
-const GAME_WORDS = WORDS.slice(0,2306);
+const GAME_WORDS = WORDS.slice(0,499);
 
 //Set the list of all valid words that someone can use to guess
 const VALID_WORDS = WORDS;
@@ -20,16 +23,16 @@ let random_word = function() {
 //Set the animation delay length (per letter in ms)
 const DELAY_LENGTH = 250;
 
-//Randomly chosen place in word list
-const START_GAME_WORDS_INDEX = 978;
+//Start place in word list
+const START_GAME_WORDS_INDEX = 0;
 
 //Prime numbers to pseudo-randomize the selection
-const GAME_WORDS_DAILY_INCREMENT = 251;
-const SECOND_WORD_INCREMENT = 47;
+const GAME_WORDS_DAILY_INCREMENT = 103;
+const SECOND_WORD_INCREMENT = 223;
 
 //Set the horizontal word
 const dayInMs = 1000 * 60 * 60 * 24;
-const START_DATE_MS = new Date('09/05/2022').getTime();
+const START_DATE_MS = new Date('11/24/2022').getTime();
 const START_DATE = START_DATE_MS / dayInMs;
 const CURR_DATE_MS = new Date().getTime();
 const CURR_DATE = CURR_DATE_MS / dayInMs;
@@ -38,21 +41,15 @@ let horizontalWord;
 if (RANDOM) {
     horizontalWord = random_word();
 } else {
-    horizontalWord = GAME_WORDS[HORIZONTAL_WORD_INDEX % 2306];
+    horizontalWord = GAME_WORDS[HORIZONTAL_WORD_INDEX % 500];
 }
 
 //Create the vertical word infrastructure
 let verticalWordIndex = 0;
 const VERTICAL_WORD_GENERATOR = function() {
     verticalWordIndex++;
-    return GAME_WORDS[(HORIZONTAL_WORD_INDEX + verticalWordIndex * SECOND_WORD_INCREMENT) % 2306];
+    return GAME_WORDS[(HORIZONTAL_WORD_INDEX + verticalWordIndex * SECOND_WORD_INCREMENT) % 500];
 }
-
-//Set up guess remaining counts for both words
-const NUMBER_OF_GUESSES = 7;
-let horizontalGuessesRemaining = NUMBER_OF_GUESSES;
-let verticalGuessesRemaining = NUMBER_OF_GUESSES;
-
 
 //Set the vertical word by trying random words until they have an overlapping letter
 //Store the coordinate of the overlapping letter so we can set up the board correctly
@@ -153,12 +150,6 @@ for (let i = 0; i < 5; i++) {
     rightBoard.appendChild(rightRow);
 }
 
-//Set up guessing infrastructure
-let guessesRemaining = NUMBER_OF_GUESSES;
-let currentGuess = [];
-let horizontalWin = false;
-let verticalWin = false;
-
 //Set up keyboard and letter infrastructure
 const LETTER_LIST = "abcdefghijklmnopqrstuvwxyz";
 //Colored keys will remember which keys have been colored (needed because keys
@@ -167,6 +158,42 @@ let colored_keys = [];
 LETTER_LIST.split("").forEach((currLet) => {
     colored_keys[currLet] = {left: "lightgrey", right:"lightgrey"};
 });
+
+//Set up guessing infrastructure
+let guesses = [];
+let guessesRemaining = NUMBER_OF_GUESSES;
+let currentGuess = [];
+let currentGameResult = 0;
+let horizontalWin = false;
+let verticalWin = false;
+
+//Pull in the game results from localstorage if they exist.  Otherwise set up new game results
+let gameResults;
+if (localStorage.getItem("gameResults")) {
+    gameResults = JSON.parse(localStorage.getItem("gameResults"));
+} else {
+    gameResults = {"-1": "0", "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0};
+    localStorage.setItem("gameResults", JSON.stringify(gameResults));
+}
+
+//If the user has already started on today's word, load their previous game
+if (JSON.parse(localStorage.getItem("horizontalWord")) == horizontalWord
+    && JSON.parse(localStorage.getItem("verticalWord")) == verticalWord
+    && localStorage.getItem("guesses")
+    && localStorage.getItem("currentGameResult")) {
+        currentGameResult = JSON.parse(localStorage.getItem("currentGameResult"));
+        let previousGuesses = JSON.parse(localStorage.getItem("guesses"));
+        previousGuesses.forEach(guess => {
+            guess.forEach(letter => insertLetter(letter));
+            checkGuess(0);
+        });
+} else {
+    //User has either never been to the page, or the last time they played was before today
+    localStorage.setItem("horizontalWord", JSON.stringify(horizontalWord));
+    localStorage.setItem("verticalWord", JSON.stringify(verticalWord));
+    localStorage.setItem("guesses", JSON.stringify(guesses));
+    localStorage.setItem("currentGameResult", JSON.stringify(currentGameResult))
+}
 
 //Handle any key presses
 document.addEventListener("keyup", (k) => {
@@ -178,7 +205,7 @@ document.addEventListener("keyup", (k) => {
         deleteLetter();
     //If the key is enter (and the user has completed the word), check the current guess
     } else if (keyPress === "Enter" && currentGuess.length === 5) {
-        checkGuess();
+        checkGuess(DELAY_LENGTH);
     //If the key is a valid letter (and the user hasn't completed the word), insert it
     } else if (LETTER_LIST.includes(keyPress.toLowerCase()) && currentGuess.length !== 5) {
         insertLetter(keyPress);
@@ -227,7 +254,7 @@ function deleteLetter () {
 }
 
 //The user pressed the enter key (and has completed the word).  Check the current guess
-function checkGuess () {
+function checkGuess (DELAY_LENGTH) {
     //Set the current row representing the horizontal guess
     let leftRow = document.getElementsByClassName("left-letter-row")[NUMBER_OF_GUESSES - guessesRemaining];
 
@@ -236,6 +263,12 @@ function checkGuess () {
         alert("Not a valid word");
         return;
     }
+
+    guesses.push(currentGuess);
+    localStorage.setItem("guesses", JSON.stringify(guesses));
+
+    let currentVerticalGuessSuccess = [];
+    let currentHorizontalGuessSuccess = [];
 
     //Check the horizontal and vertical word letter-by-letter
     for (let i = 0; i < 5; i++) {
@@ -284,6 +317,9 @@ function checkGuess () {
                 } else {
                     //If we've already shaded it green, don't overwrite that
                     if (colored_keys[guessLetter].left === 'lightgrey') colored_keys[guessLetter].left = 'yellow';
+
+                    // let exactMatches = horizontalWord.map(() => )
+                    // let partialMatches = 
 
                     //After the animation delay, set the keyboard and guess board to yellow
                     setTimeout((i, guessLetter) => {
@@ -364,7 +400,14 @@ function checkGuess () {
     //If the user has guessed both words correctly
     if (horizontalWin && verticalWin) {
         setTimeout(()=> {
-            alert("You guessed both words correctly!");
+            if (currentGameResult == 0) {
+                console.log(guessesRemaining);
+                currentGameResult = NUMBER_OF_GUESSES - guessesRemaining + 1;
+                console.log(currentGameResult);
+                localStorage.setItem("currentGameResult", JSON.stringify(currentGameResult));
+                updateGameResults();
+                alert("You guessed both words correctly!");
+            }
             guessesRemaining = 0;
         }, DELAY_LENGTH * 5)
     //The user hasn't won yet
@@ -374,11 +417,21 @@ function checkGuess () {
 
         //Game over
         if (guessesRemaining === 0) {
-            setTimeout(() => {
-                alert(`You've run out of guesses, game over!  The words were: "${horizontalWord}" and "${verticalWord}"`);
-            }, DELAY_LENGTH * 5);
+            if (currentGameResult == 0) {
+                setTimeout(() => {
+                    currentGameResult = -1;
+                    localStorage.setItem("currentGameResult", JSON.stringify(currentGameResult));
+                    updateGameResults();
+                    alert(`You've run out of guesses, game over!  The words were: "${horizontalWord}" and "${verticalWord}"`);
+                }, DELAY_LENGTH * 5);
+            }
         }
     }
+}
+
+function updateGameResults() {
+    gameResults[currentGameResult]++;
+    localStorage.setItem("gameResults", JSON.stringify(gameResults));
 }
 
 //Send presses on the onscreen keyboard through as regular keyboard presses

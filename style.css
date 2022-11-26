@@ -98,3 +98,56 @@ h1 {
     width: 3rem;
     font-size: 0.7rem;
 }
+
+#results-container {
+    position: absolute;
+    top: 5rem;
+    z-index: 1;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#results {
+    padding: 5px;
+    justify-content: center;
+    width: 20rem;
+    border: solid 1px darkgrey;
+    border-radius: 1rem;
+    background-color: white;
+    text-align: center;
+    font-family: sans-serif;
+    text-transform: uppercase;
+    font-weight: 700;
+    display: none;
+}
+
+#results-title {
+    padding: 5px;
+}
+
+#results-table {
+    display: grid;
+    grid-template-columns: 20px 1fr;
+    padding: 5px;
+}
+
+.results-number {
+    text-align: right;
+    padding: 5px;
+    margin: 5px;
+}
+
+.results-bar {
+    text-align: center;
+    margin: 5px;
+    padding: 5px;
+    background-color: darkgrey;
+    color: white;
+    width: 5%;
+}
+
+.results-bar-50 {
+    width: 50% !important;
+}
